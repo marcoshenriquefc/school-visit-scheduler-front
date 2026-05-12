@@ -1,0 +1,1 @@
+<script setup lang="ts">const props=withDefaults(defineProps<{type?:'info'|'success'|'error';message:string}>(),{type:'info'});const cls=computed(()=>({info:'bg-blue-50 text-blue-700',success:'bg-emerald-50 text-emerald-700',error:'bg-rose-50 text-rose-700'}[props.type]))</script><template><div class="rounded px-3 py-2 text-sm" :class="cls">{{message}}</div></template>

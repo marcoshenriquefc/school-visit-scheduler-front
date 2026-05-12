@@ -1,0 +1,1 @@
+<template><div class="mx-auto mt-20 max-w-xl rounded bg-white p-6 text-center shadow"><h1 class="text-3xl font-semibold">403</h1><p class="mt-2">Você não tem permissão para acessar esta área.</p><NuxtLink to="/admin" class="mt-4 inline-block text-blue-600">Voltar ao dashboard</NuxtLink></div></template>

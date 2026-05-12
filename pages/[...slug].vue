@@ -1,0 +1,1 @@
+<template><div class="mx-auto mt-20 max-w-xl rounded bg-white p-6 text-center shadow"><h1 class="text-3xl font-semibold">404</h1><p class="mt-2">Página não encontrada.</p><NuxtLink to="/" class="mt-4 inline-block text-blue-600">Voltar ao início</NuxtLink></div></template>

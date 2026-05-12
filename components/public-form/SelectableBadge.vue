@@ -1,0 +1,1 @@
+<script setup lang="ts">defineProps<{selected:boolean;color?:string}>()</script><template><button class="rounded-full border px-4 py-2 text-sm" :style="selected && color ? `border-color:${color};background:${color}22` : ''" :class="selected ? 'border-blue-500 bg-blue-50':'border-slate-300'"><slot/></button></template>

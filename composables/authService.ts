@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import type { LoginPayload, LoginResponse } from '~/types/auth'
+import type { LoginPayload, LoginResponse, MeResponse } from '~/types/auth'
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8)
+  email: z.string().email('Please enter a valid email.'),
+  password: z.string().min(8, 'Password must have at least 8 characters.')
 })
 
 export const useAuthService = () => {
@@ -14,5 +14,7 @@ export const useAuthService = () => {
     return api.request<LoginResponse>('/auth/login', { method: 'POST', body: payload })
   }
 
-  return { login }
+  const me = async () => api.request<MeResponse>('/auth/me', { auth: true })
+
+  return { login, me, loginSchema }
 }

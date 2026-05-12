@@ -10,7 +10,6 @@ export const useApi = () => {
 
     try {
       if (showGlobalLoading) uiStore.setLoading(true)
-
       return await $fetch<T>(url, {
         baseURL: config.public.apiBaseUrl,
         ...rest,
@@ -20,13 +19,13 @@ export const useApi = () => {
         },
         onResponseError({ response }) {
           if (response.status === 401) {
-            authStore.clearSession()
+            authStore.logout()
             navigateTo('/login')
           }
         }
       })
     } catch (error) {
-      throw createError({ statusCode: 500, statusMessage: getFriendlyErrorMessage(error), data: error })
+      throw new Error(getFriendlyErrorMessage(error))
     } finally {
       if (showGlobalLoading) uiStore.setLoading(false)
     }

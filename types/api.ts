@@ -3,20 +3,29 @@ export interface ApiErrorResponse {
   details: unknown | null
 }
 
-export interface PaginatedResponse<T> {
-  data: T[]
-  page: number
-  limit: number
-  total: number
+export interface DashboardMetrics {
+  totals: { leads: number; scheduled: number; attended: number; noShow: number; canceled: number }
+  leadsByUnit: Array<{ label: string; value: number }>
+  leadsByGrade: Array<{ label: string; value: number }>
+  schedulesByDate: Array<{ label: string; value: number }>
+  schedulesByHour: Array<{ label: string; value: number }>
+  rubeusStatus: Array<{ label: string; value: number }>
+  topHours: Array<{ label: string; value: number }>
 }
 
-export interface EntityBase {
+export interface Unit {
   id: string
-  createdAt?: string
-  updatedAt?: string
+  name: string
+  identifier: string
+  address: string
+  defaultCapacityPerHour: number
+  color: string
+  isActive: boolean
 }
 
-export interface Unit extends EntityBase { name: string; identifier: string; isActive: boolean }
-export interface Grade extends EntityBase { name: string; identifier: string; isActive: boolean }
-export interface Form extends EntityBase { title: string; slug: string; status: string }
-export interface Lead extends EntityBase { name: string; email: string; status: string }
+export interface Grade {
+  id: string
+  name: string
+  identifier: string
+  isActive: boolean
+}

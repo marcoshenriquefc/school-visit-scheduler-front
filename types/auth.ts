@@ -1,10 +1,10 @@
 export type UserRole = 'ADMIN' | 'MARKETING' | 'COMMERCIAL' | 'OPERATIONAL'
 
 export interface AuthUser {
-  id: string
-  name: string
+  userId: string
   email: string
   role: UserRole
+  name?: string
 }
 
 export interface LoginPayload {
@@ -14,5 +14,18 @@ export interface LoginPayload {
 
 export interface LoginResponse {
   token: string
-  user: AuthUser
+  user: {
+    id: string
+    name: string
+    email: string
+    role: UserRole
+  }
+}
+
+export interface MeResponse {
+  user: {
+    userId: string
+    role: UserRole
+    email: string
+  }
 }

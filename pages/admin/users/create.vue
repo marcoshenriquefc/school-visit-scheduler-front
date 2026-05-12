@@ -1,0 +1,7 @@
+<script setup lang="ts">
+definePageMeta({ layout: 'admin' })
+const authStore = useAuthStore(); if (authStore.user?.role !== 'ADMIN') throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+const service = useUsersService(); const form = reactive({ name:'', email:'', password:'', role:'MARKETING' as any }); const errors = reactive<Record<string,string>>({}); const isLoading = ref(false)
+const submit = async () => { Object.keys(errors).forEach((k)=>delete errors[k]); const parsed = userSchema.safeParse(form); if(!parsed.success){ parsed.error.issues.forEach(i=>errors[i.path[0] as string]=i.message); return } isLoading.value=true; try{ await service.create(parsed.data as any); await navigateTo('/admin/users') } catch(e){ errors.form=getFriendlyErrorMessage(e)} finally{ isLoading.value=false } }
+</script>
+<template><div class="space-y-4"><h2 class="text-2xl font-semibold">Criar usuário</h2><BaseCard><div class="grid gap-3 md:grid-cols-2"><BaseInput v-model="form.name" label="Nome" :error="errors.name"/><BaseInput v-model="form.email" type="email" label="Email" :error="errors.email"/><BaseInput v-model="form.password" type="password" label="Senha" :error="errors.password"/><BaseSelect v-model="form.role" label="Perfil" :options="['ADMIN','MARKETING','OPERATIONAL','COMMERCIAL'].map((r)=>({label:r,value:r}))"/></div><BaseAlert v-if="errors.form" type="error" :message="errors.form" class="mt-3"/><div class="mt-4"><BaseButton :loading="isLoading" label="Salvar" @click="submit"/></div></BaseCard></div></template>

@@ -1,0 +1,1 @@
+<script setup lang="ts">const uiStore = useUiStore()</script><template><div v-if="uiStore.toastMessage" class="fixed bottom-4 right-4 rounded bg-slate-900 px-4 py-2 text-white">{{uiStore.toastMessage}}</div></template>

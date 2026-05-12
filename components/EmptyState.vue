@@ -1,0 +1,1 @@
+<script setup lang="ts">defineProps<{title:string;description?:string}>()</script><template><div class="rounded border border-dashed border-slate-300 p-6 text-center"><p class="font-medium">{{title}}</p><p v-if="description" class="text-sm text-slate-500">{{description}}</p></div></template>

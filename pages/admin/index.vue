@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import BaseCard from '~/components/BaseCard.vue'
+import BaseInput from '~/components/BaseInput.vue'
+import EmptyState from '~/components/EmptyState.vue'
+
 definePageMeta({ layout: 'admin' })
 
 const dashboardService = useDashboardService()

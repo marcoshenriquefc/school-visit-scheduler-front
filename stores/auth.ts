@@ -23,10 +23,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const authService = useAuthService()
       const response = await authService.login(payload)
-      setToken(response.token)
+      setToken(response.token);
       setUser({ userId: response.user.id, email: response.user.email, role: response.user.role, name: response.user.name })
       await fetchMe()
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }

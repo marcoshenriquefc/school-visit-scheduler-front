@@ -1,4 +1,5 @@
 export type LeadStatus = 'SCHEDULED' | 'ATTENDED' | 'NO_SHOW' | 'RESCHEDULED' | 'CANCELED'
+export type RubeusStatus = | 'PENDING' | 'SENT' | 'ERROR' | 'RESENT';
 
 export interface LeadItem {
   id: string
@@ -23,16 +24,45 @@ export interface LeadDetails extends LeadItem {
 }
 
 export interface LeadsListResponse {
-  data: LeadItem[]
+  items: LeadItem[]
   page: number
   limit: number
   total: number
 }
 
+type LeadsQuery = {
+  page?: number
+  limit?: number
+  formId?: string
+  unitId?: string
+  gradeId?: string
+  status?: LeadStatus | ''
+  rubeusStatus?: RubeusStatus | ''
+  startDate?: string
+  endDate?: string
+  search?: string
+}
+
+
+const removeEmptyQueryParams = (query: LeadsQuery) => {
+  return Object.fromEntries(
+    Object.entries(query).filter(([, value]) => {
+      return value !== undefined && value !== null && value !== ''
+    })
+  )
+}
+
 export const useLeadsService = () => {
   const api = useApi()
+  
+
   return {
-    list: (query: Record<string, unknown>) => api.request<LeadsListResponse>('/admin/leads', { auth: true, query }),
+    list: (query: Record<string, unknown>) =>
+      api.request<LeadsListResponse>( '/admin/leads', {
+        auth: true,
+        query: removeEmptyQueryParams(query)
+      }
+    ),
     getById: (id: string) => api.request<LeadDetails>(`/admin/leads/${id}`, { auth: true }),
     updateStatus: (id: string, status: LeadStatus) => api.request(`/admin/leads/${id}/status`, { method: 'PATCH', auth: true, body: { status } }),
     resendRubeus: (id: string) => api.request(`/admin/leads/${id}/rubeus/retry`, { method: 'POST', auth: true }),

@@ -22,7 +22,9 @@ const submitLogin = async () => {
   try {
     await authStore.login(parsed.data)
     await navigateTo('/admin')
-  } catch (error) {
+  }
+  catch (error) {
+    console.log(error)
     errorMessage.value = getFriendlyErrorMessage(error)
   }
 }

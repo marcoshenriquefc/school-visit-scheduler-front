@@ -1,18 +1,255 @@
 <script setup lang="ts">
-import { z } from 'zod'
-definePageMeta({ layout: 'admin' })
-const authStore = useAuthStore(); const canEdit=computed(()=>['ADMIN','MARKETING','COMMERCIAL'].includes(authStore.user?.role||''))
-const route=useRoute(); const formId=String(route.params.id); const service=useAvailabilityService(); const unitsService=useUnitsService();
-const units=ref<any[]>([]); const slots=ref<any[]>([]); const errorMessage=ref(''); const isLoading=ref(false)
-const selectedUnitId=ref('')
-const generateForm=reactive({ startHour:'08:00', endHour:'17:00', slotDurationMinutes:60, weekdays:[1,2,3,4,5], holidayDates:'' })
-const manualForm=reactive({ date:'', startTime:'08:00', endTime:'09:00', capacity:1, isBlocked:false })
-const schema=z.object({date:z.string().min(1),startTime:z.string(),endTime:z.string(),capacity:z.coerce.number().positive()})
-const load=async()=>{ if(!selectedUnitId.value) return; isLoading.value=true; try{ slots.value=await service.listByForm(formId,{unitId:selectedUnitId.value}) }catch(e){errorMessage.value=getFriendlyErrorMessage(e)}finally{isLoading.value=false}}
-onMounted(async()=>{ units.value=await unitsService.list(); selectedUnitId.value=units.value[0]?.id||''; await load() })
-const generate=async()=>{ if(!canEdit.value) return; await service.generate(formId,{unitId:selectedUnitId.value,...generateForm,holidayDates:generateForm.holidayDates?generateForm.holidayDates.split(',').map(v=>v.trim()):[]}); await load() }
-const createManual=async()=>{ if(!canEdit.value) return; const p=schema.safeParse(manualForm); if(!p.success){ errorMessage.value=p.error.issues[0].message; return } if(new Date(p.data.date)<new Date(new Date().toISOString().slice(0,10))){ errorMessage.value='Past dates are not allowed.'; return } await service.createManual(formId,{unitId:selectedUnitId.value,...p.data,isBlocked:manualForm.isBlocked}); await load() }
-const toggleBlock=async(slot:any)=>{ if(!canEdit.value) return; if(slot.isBlocked) await service.unblock(slot.id); else await service.block(slot.id,'Manual block'); await load() }
-const updateCap=async(slot:any, capacity:number)=>{ if(!canEdit.value) return; await service.update(slot.id,{capacity}); await load() }
+    import { z } from "zod";
+    import BaseBadge from "~/components/BaseBadge.vue";
+    import BaseButton from "~/components/BaseButton.vue";
+    import BaseCard from "~/components/BaseCard.vue";
+    import BaseInput from "~/components/BaseInput.vue";
+    import BaseLoading from "~/components/BaseLoading.vue";
+    import BaseSelect from "~/components/BaseSelect.vue";
+    import BaseTable from "~/components/BaseTable.vue";
+
+
+    definePageMeta({ layout: "admin" });
+
+    const authStore = useAuthStore();
+    const canEdit = computed(() =>
+        ["ADMIN", "MARKETING", "COMMERCIAL"].includes(authStore.user?.role || ""),
+    );
+    const route = useRoute();
+    const formId = String(route.params.id);
+    const service = useAvailabilityService();
+    const unitsService = useUnitsService();
+    const units = ref<any[]>([]);
+    const slots = ref<any[]>([]);
+    const errorMessage = ref("");
+    const isLoading = ref(false);
+    const selectedUnitId = ref("");
+
+    const generateForm = reactive({
+        startHour: "08:00",
+        endHour: "17:00",
+        slotDurationMinutes: 60,
+        weekdays: [1, 2, 3, 4, 5],
+        holidayDates: "",
+    });
+    const manualForm = reactive({
+        date: "",
+        startTime: "08:00",
+        endTime: "09:00",
+        capacity: 1,
+        isBlocked: false,
+    });
+    const schema = z.object({
+        date: z.string().min(1),
+        startTime: z.string(),
+        endTime: z.string(),
+        capacity: z.coerce.number().positive(),
+    });
+
+    const load = async () => {
+        if (!selectedUnitId.value) return;
+        isLoading.value = true;
+        try {
+            slots.value = await service.listByForm(formId, {
+                unitId: selectedUnitId.value,
+            });
+        }
+        catch (e) {
+            errorMessage.value = getFriendlyErrorMessage(e);
+        }
+        finally {
+            isLoading.value = false;
+        }
+    };
+    onMounted(async () => {
+        units.value = await unitsService.list();
+        selectedUnitId.value = units.value[0]?.id || "";
+        await load();
+    });
+    const generate = async () => {
+        if (!canEdit.value) return;
+        await service.generate(formId, {
+            unitId: selectedUnitId.value,
+            ...generateForm,
+            holidayDates: generateForm.holidayDates
+                ? generateForm.holidayDates.split(",").map((v) => v.trim())
+                : [],
+        });
+        await load();
+    };
+    const createManual = async () => {
+        if (!canEdit.value) return;
+        const p = schema.safeParse(manualForm);
+        if (!p.success) {
+            errorMessage.value = p.error.issues[0].message;
+            return;
+        }
+        if (new Date(p.data.date) < new Date(new Date().toISOString().slice(0, 10))) {
+            errorMessage.value = "Past dates are not allowed.";
+            return;
+        }
+        await service.createManual(formId, {
+            unitId: selectedUnitId.value,
+            ...p.data,
+            isBlocked: manualForm.isBlocked,
+        });
+        await load();
+    };
+    const toggleBlock = async (slot: any) => {
+        if (!canEdit.value) return;
+        if (slot.isBlocked) await service.unblock(slot.id);
+        else await service.block(slot.id, "Manual block");
+        await load();
+    };
+    const updateCap = async (slot: any, capacity: number) => {
+        if (!canEdit.value) return;
+        await service.update(slot.id, { capacity });
+        await load();
+    };
 </script>
-<template><div class="space-y-4"><h2 class="text-2xl font-semibold">Disponibilidade por formulário</h2><BaseAlert v-if="errorMessage" type="error" :message="errorMessage"/><BaseCard><div class="grid gap-3 md:grid-cols-4"><BaseSelect v-model="selectedUnitId" label="Unidade" :options="units.map((u)=>({label:u.name,value:u.id}))"/><div class="flex items-end"><BaseButton label="Carregar horários" @click="load"/></div></div></BaseCard><BaseCard class="space-y-2"><h3 class="font-semibold">Gerar slots automaticamente</h3><div class="grid gap-3 md:grid-cols-4"><BaseInput v-model="generateForm.startHour" label="Início" type="time"/><BaseInput v-model="generateForm.endHour" label="Fim" type="time"/><BaseInput v-model="generateForm.slotDurationMinutes" label="Duração" type="number"/><BaseInput v-model="generateForm.holidayDates" label="Feriados (CSV)" placeholder="2026-12-25"/></div><BaseButton v-if="canEdit" label="Gerar slots" @click="generate"/></BaseCard><BaseCard class="space-y-2"><h3 class="font-semibold">Criar slot manual</h3><div class="grid gap-3 md:grid-cols-5"><BaseInput v-model="manualForm.date" type="date" label="Data"/><BaseInput v-model="manualForm.startTime" type="time" label="Início"/><BaseInput v-model="manualForm.endTime" type="time" label="Fim"/><BaseInput v-model="manualForm.capacity" type="number" label="Capacidade"/><BaseCheckbox v-model="manualForm.isBlocked" label="Bloqueado"/></div><BaseButton v-if="canEdit" label="Criar slot" @click="createManual"/></BaseCard><BaseTable v-if="slots.length"><thead><tr><th class="p-2">Data</th><th>Horário</th><th>Capacidade</th><th>Ocupação</th><th>Status</th><th>Ações</th></tr></thead><tbody><tr v-for="slot in slots" :key="slot.id" :class="slot.isBlocked ? 'bg-rose-50' : ''"><td class="p-2">{{slot.date}}</td><td>{{slot.startTime}} - {{slot.endTime}}</td><td><input class="w-20 rounded border p-1" type="number" :value="slot.capacity" @change="updateCap(slot, Number(($event.target as HTMLInputElement).value))"></td><td><BaseBadge :variant="slot.occupied >= slot.capacity ? 'warning':'neutral'">{{slot.occupied || 0}} / {{slot.capacity}}</BaseBadge></td><td><BaseBadge :variant="slot.isBlocked ? 'danger':'success'">{{ slot.isBlocked ? 'Bloqueado':'Ativo' }}</BaseBadge></td><td><BaseButton v-if="canEdit" :label="slot.isBlocked ? 'Desbloquear':'Bloquear'" variant="secondary" @click="toggleBlock(slot)"/></td></tr></tbody></BaseTable><EmptyState v-else-if="!isLoading" title="Sem horários" description="Nenhum slot disponível."/><div v-if="isLoading" class="flex items-center gap-2"><BaseLoading/> Loading slots...</div></div></template>
+
+<template>
+    <div class="space-y-4">
+        <h2 class="text-2xl font-semibold">Disponibilidade por formulário</h2>
+        <BaseAlert v-if="errorMessage" type="error" :message="errorMessage" />
+        <BaseCard>
+            <div class="grid gap-3 md:grid-cols-4">
+                <BaseSelect v-model="selectedUnitId" label="Unidade" :options="units.map((u) => ({ label: u.name, value: u.id }))" />
+                <div class="flex items-end">
+                    <BaseButton label="Carregar horários" @click="load" />
+                </div>
+            </div>
+        </BaseCard>
+
+        <BaseCard class="space-y-2">
+            <h3 class="font-semibold">Gerar slots automaticamente</h3>
+            <div class="grid gap-3 md:grid-cols-4">
+                <BaseInput
+                    v-model="generateForm.startHour"
+                    label="Início"
+                    type="time"
+                />
+                <BaseInput
+                    v-model="generateForm.endHour"
+                    label="Fim"
+                    type="time"
+                />
+                <BaseInput
+                    v-model="generateForm.slotDurationMinutes"
+                    label="Duração"
+                    type="number"
+                />
+                <BaseInput
+                    v-model="generateForm.holidayDates"
+                    label="Feriados (CSV)"
+                    placeholder="2026-12-25"
+                />
+            </div>
+
+            <BaseButton
+                v-if="canEdit"
+                label="Gerar slots"
+                @click="generate"
+            />
+        
+        </BaseCard>
+
+        <BaseCard class="space-y-2">
+            <h3 class="font-semibold">Criar slot manual</h3>
+            <div class="grid gap-3 md:grid-cols-5">
+                <BaseInput
+                    v-model="manualForm.date"
+                    type="date"
+                    label="Data"
+                />
+                <BaseInput
+                    v-model="manualForm.startTime"
+                    type="time"
+                    label="Início"
+                />
+                <BaseInput
+                    v-model="manualForm.endTime"
+                    type="time"
+                    label="Fim"
+                />
+                <BaseInput
+                    v-model="manualForm.capacity"
+                    type="number"
+                    label="Capacidade"
+                />
+                <BaseCheckbox v-model="manualForm.isBlocked" label="Bloqueado" />
+            </div>
+
+            <BaseButton
+                v-if="canEdit"
+                label="Criar slot"
+                @click="createManual"
+            />
+        </BaseCard>
+        <BaseTable v-if="slots.length">
+            <thead>
+                <tr>
+                    <th class="p-2">Data</th>
+                    <th>Horário</th>
+                    <th>Capacidade</th>
+                    <th>Ocupação</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr
+                    v-for="slot in slots"
+                    :key="slot.id"
+                    :class="slot.isBlocked ? 'bg-rose-50' : ''"
+                >
+                    <td class="p-2">{{ slot.date }}</td>
+
+                    <td>{{ slot.startTime }} - {{ slot.endTime }}</td>
+
+                    <td>
+                        <input
+                            class="w-20 rounded border p-1"
+                            type="number"
+                            :value="slot.capacity"
+                            @change="updateCap( slot, Number(($event.target as HTMLInputElement).value),)"
+                        />
+                    </td>
+
+                    <td>
+                        <BaseBadge
+                            :variant="slot.occupied >= slot.capacity ? 'warning' : 'neutral'"
+                            >{{ slot.occupied || 0 }} / {{ slot.capacity }}</BaseBadge
+                        >
+                    </td>
+
+                    <td>
+                        <BaseBadge
+                            :variant="slot.isBlocked ? 'danger' : 'success'">{{ slot.isBlocked ? "Bloqueado" : "Ativo" }}
+                        </BaseBadge>
+                    </td>
+
+                    <td>
+                        <BaseButton
+                            v-if="canEdit"
+                            :label="slot.isBlocked ? 'Desbloquear' : 'Bloquear'"
+                            variant="secondary"
+                            @click="toggleBlock(slot)"
+                        />
+                    </td>
+                </tr>
+            </tbody>
+        </BaseTable>
+
+        <EmptyState
+            v-else-if="!isLoading"
+            title="Sem horários"
+            description="Nenhum slot disponível."
+        />
+
+        <div v-if="isLoading" class="flex items-center gap-2">
+            <BaseLoading /> Loading slots...
+        </div>
+    </div>
+</template>

@@ -1,2 +1,24 @@
-<script setup lang="ts">defineProps<{currentStep:number;steps:string[]}>()</script>
-<template><div class="overflow-auto"><div class="flex min-w-max gap-3"><div v-for="(s,i) in steps" :key="s" class="flex items-center gap-2"><span class="grid h-7 w-7 place-items-center rounded-full text-xs" :class="i+1<currentStep?'bg-emerald-500 text-white':i+1===currentStep?'bg-blue-600 text-white':'bg-slate-200 text-slate-600'">{{ i+1 }}</span><span class="text-sm">{{ s }}</span></div></div></div></template>
+<script setup lang="ts">
+defineProps<{ currentStep: number; steps: string[] }>();
+</script>
+
+<template>
+    <div class="overflow-auto">
+        <div class="flex min-w-max gap-3">
+            <div v-for="(s, i) in steps" :key="s" class="flex items-center gap-2">
+                <span
+                    class="grid h-7 w-7 place-items-center rounded-full text-xs"
+                    :class="
+                        i + 1 < currentStep
+                            ? 'bg-emerald-500 text-white'
+                            : i + 1 === currentStep
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-slate-200 text-slate-600'
+                    "
+                >{{ i + 1 }}</span>
+                
+                <span class="text-sm">{{ s }}</span>
+            </div>
+        </div>
+    </div>
+</template>

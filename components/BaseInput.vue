@@ -1,2 +1,39 @@
-<script setup lang="ts">interface Props{modelValue:string;label?:string;placeholder?:string;error?:string;success?:string;disabled?:boolean;type?:string}withDefaults(defineProps<Props>(),{type:'text'});defineEmits<{(e:'update:modelValue',v:string):void}>()</script>
-<template><label class="block space-y-1"><span v-if="label" class="text-sm">{{label}}</span><input :value="modelValue" :type="type" :placeholder="placeholder" :disabled="disabled" class="w-full rounded border px-3 py-2" :class="error?'border-rose-500':success?'border-emerald-500':'border-slate-300'" @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"/><small v-if="error" class="text-rose-600">{{error}}</small><small v-else-if="success" class="text-emerald-600">{{success}}</small></label></template>
+<script setup lang="ts">
+    interface Props {
+        modelValue?: string | number | null,
+        label?: string;
+        placeholder?: string;
+        error?: string;
+        success?: string;
+        disabled?: boolean;
+        type?: string;
+    }
+    withDefaults(defineProps<Props>(), { type: "text" });
+    defineEmits<{ (e: "update:modelValue", v: string): void }>();
+</script>
+
+<template>
+    <label class="block space-y-1">
+        <span v-if="label" class="text-sm">{{ label }}</span>
+        <input
+            :value="modelValue"
+            :type="type"
+            :placeholder="placeholder"
+            :disabled="disabled"
+            class="w-full rounded border px-3 py-2"
+            :class="
+                error
+                ? 'border-rose-500'
+                : success
+                    ? 'border-emerald-500'
+                    : 'border-slate-300'
+            "
+            @input=" $emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+        />
+        
+        <small v-if="error" class="text-rose-600">{{ error }}</small>
+        <small v-else-if="success" class="text-emerald-600">
+            {{ success}}
+        </small>
+    </label>
+</template>
